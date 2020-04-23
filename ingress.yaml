@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingr-sampleservicedockerlnx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+  - host: arch.homework
+    http:
+      paths:
+        - path: /otusapp($|/)(.*)
+          backend:
+            serviceName: srv-sampleservicedockerlnx
+            servicePort: 9000

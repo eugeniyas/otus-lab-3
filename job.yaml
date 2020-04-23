@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: jb-initdb
+spec:
+  template:
+    metadata:
+      name: jb-initdb
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: post-install-job
+        env:
+          - name: SA_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: sample-secret
+                key: SA_PASSWORD
+        image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
+        command:
+          - sh
+          - "-c"
+          - |
+            /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P $SA_PASSWORD <<'EOF'
+            USE master;
+            GO
+            CREATE DATABASE OtusLab;
+            GO
+            USE OtusLab;
+            GO
+            CREATE TABLE dbo.Users (
+                Id INT NOT NULL IDENTITY (1,1) PRIMARY KEY, 
+                UserName NVARCHAR(256), 
+                FirstName NVARCHAR(256), 
+                LastName NVARCHAR(256), 
+                Email NVARCHAR(128), 
+                Phone NVARCHAR(128) );
+            GO
+            INSERT INTO dbo.Users (UserName, FirstName, LastName, Email, Phone)
+            VALUES ('apetrov', 'Aleksandr', 'Petrov', 'apetrov@gmail.com', '+711155577'); 
+            GO
+            EOF
+  backoffLimit: 2

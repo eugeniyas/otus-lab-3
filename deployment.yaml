@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: dpl-sampleservicedockerlnx
+spec:
+    replicas: 2
+    selector:
+       matchLabels:
+          app: sampleservicedockerlnx
+    template:
+       metadata:
+          labels:
+             app: sampleservicedockerlnx
+       spec:
+          containers:
+          - name: sampleservicedockerlnx
+            image: eugeniyas/sampleservicedockerlnx:v2
+            env:
+              - name: CONNECTION_STR
+                valueFrom:
+                  secretKeyRef:
+                    name: sample-secret
+                    key: CONNECTION_STR
+              - name: PARAM
+                valueFrom:
+                  configMapKeyRef:
+                    name: sample-config
+                    key: PARAM
+            ports:
+              - name: web 
+                containerPort: 80
+            livenessProbe:
+              httpGet:
+                port: 80
+                path: /
+              initialDelaySeconds: 10
+              periodSeconds: 5
+              timeoutSeconds: 2
+            readinessProbe:
+              httpGet:
+                port: 80
+                path: /health
+              initialDelaySeconds: 10
+              periodSeconds: 5
